@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mybatis.tutorial.mapper.UserMapper" >
+    <select id="findUserById" parameterType="Integer" resultType="com.mybatis.tutorial.pojo.User">
+        SELECT
+        *
+        FROM user
+        WHERE id = #{v}
+    </select>
+    <!--这里的返回值指的是list的泛型-->
+    <!--#{}占位符  ${}字符串拼接-->
+    <select id="findUserByUserName" parameterType="String" resultType="User">
+        SELECT
+        *
+        FROM user
+        WHERE username LIKE "%"#{v}"%"
+    </select>
+    <insert id="insertUser" parameterType="com.mybatis.tutorial.pojo.User">
+        <selectKey keyProperty="id" resultType="Integer" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO USER (birthday,username,address,sex)
+        VALUES (#{birthday},#{username},#{address},#{sex})
+    </insert>
+
+    <update id="updateUserById" parameterType="com.mybatis.tutorial.pojo.User">
+        UPDATE user
+        SET username = #{username}, sex = #{sex}, birthday=#{birthday},address=#{address}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteUserById" parameterType="Integer">
+        DELETE FROM user where id = #{vvv}
+    </delete>
+
+    <select id="findUserByQueryVo" parameterType="com.mybatis.tutorial.pojo.QueryVo" resultType="com.mybatis.tutorial.pojo.User">
+        select * from USER WHERE username LIKE "%"#{user.username}"%";
+    </select>
+
+    <select id="countuser" resultType="Integer">
+        SELECT count(*) from user;
+    </select>
+
+    <sql id="selector">
+        select * from USER
+    </sql>
+
+    <!--where标签只能过滤前and 去掉第一个前and-->
+    <select id="selectUserBySexAndUsername" parameterType="com.mybatis.tutorial.pojo.User" resultType="com.mybatis.tutorial.pojo.User">
+        <include refid="selector"/>
+        <where>
+            <if test="sex != null and sex !=''">
+                sex = #{sex}
+            </if>
+            <if test="username != null and username !=''">
+                and username = #{username}
+            </if>
+        </where>
+
+
+    </select>
+
+    <select id="selectUserByIds" parameterType="com.mybatis.tutorial.pojo.QueryVo" resultType="com.mybatis.tutorial.pojo.User">
+    <include refid="selector"/>
+    <where>
+
+    <foreach collection="idsList" item="ida" separator="," open="id IN (" close=")">
+    #{ida}
+    </foreach>
+    </where>
+    </select>
+
+    <!--<select id="selectUserByIds" parameterType="com.mybatis.tutorial.pojo.QueryVo" resultType="com.mybatis.tutorial.pojo.User">-->
+        <!--<include refid="selector"/>-->
+        <!--<where>-->
+            <!--id IN-->
+            <!--<foreach collection="idsList" item="ida" separator="," open="(" close=")">-->
+                <!--#{ida}-->
+            <!--</foreach>-->
+        <!--</where>-->
+    <!--</select>-->
+
+    <!--<select id="selectUserByIds" parameterType="java.util.Arrays" resultType="com.mybatis.tutorial.pojo.User">-->
+        <!--<include refid="selector"/>-->
+        <!--<where>-->
+            <!--id IN-->
+            <!--<foreach collection="array" item="ida" separator="," open="(" close=")">-->
+                <!--#{ida}-->
+            <!--</foreach>-->
+        <!--</where>-->
+    <!--</select>-->
+
+    <!--<select id="selectUserByIds" parameterType="java.util.ArrayList" resultType="com.mybatis.tutorial.pojo.User">-->
+        <!--<include refid="selector"/>-->
+        <!--<where>-->
+            <!--id IN-->
+            <!--<foreach collection="collection" item="ida" separator="," open="(" close=")">-->
+                <!--#{ida}-->
+            <!--</foreach>-->
+        <!--</where>-->
+    <!--</select>-->
+
+    <resultMap id="user" type="com.mybatis.tutorial.pojo.User">
+        <id column="user_id" property="id"/>
+        <result column="username" property="username"/>
+        <!--一对多-->
+        <!--ofType list里每一个元素的类型-->
+        <collection property="ordersList" ofType="com.mybatis.tutorial.pojo.Orders">
+            <id column="id" property="id"></id>
+            <result column="number" property="number"></result>
+        </collection>
+    </resultMap>
+
+    <select id="selectUserList" resultMap="user">
+        SELECT
+        o.id,
+        o.user_id,
+        o.number,
+        o.createtime,
+        u.username
+        FROM user u
+        LEFT JOIN orders o
+        on o.user_id = u.id
+    </select>
+
+</mapper>

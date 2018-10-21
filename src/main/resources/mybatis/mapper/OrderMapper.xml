@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mybatis.tutorial.mapper.OrderMapper" >
+    <resultMap id="orders" type="com.mybatis.tutorial.pojo.Orders">
+        <id column="id" property="id"/>
+        <result column="number" property="number" />
+        <result column="user_id" property="userId"/>
+        <result column="createtime" property="createtime"/>
+    </resultMap>
+    <select id="selectOrdersList" resultMap="orders">
+        SELECT id, user_id, number,createtime, note FROM orders
+    </select>
+
+    <!--// 一对一关联查询-->
+    <!--这个时候不能省略-->
+    <resultMap id="order" type="com.mybatis.tutorial.pojo.Orders">
+        <id column="id" property="id"/>
+        <result column="createtime" property="createtime"></result>
+        <!--一对一-->
+        <association property="user" javaType="com.mybatis.tutorial.pojo.User">
+            <id column="uid" property="id"></id>
+            <result column="username" property="username"></result>
+        </association>
+    </resultMap>
+
+    <select id="selectOrders" resultMap="order">
+        SELECT
+        o.id,
+        o.number,
+        o.createtime,
+        u.id as uId,
+        u.username
+        FROM orders o
+        LEFT JOIN user u
+        on o.user_id = u.id
+    </select>
+
+</mapper>
